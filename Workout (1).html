@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>אימונים | Pini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#13131A;--surface:#1C1C26;--surface2:#232330;--border:#2A2A38;
+  --amber:#E8A526;--amber-dim:#7A4F0D;--green:#3DB86A;--green-bg:#112219;
+  --text:#EDEAE0;--muted:#6A6575;
+  --push:#E85A26;--pull:#2680E8;--legs:#8B26E8;--radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0;}
+button,select{touch-action:manipulation;cursor:pointer;}
+button{-webkit-user-select:none;user-select:none;}
+html{height:100%;}
+body{background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;
+  min-height:100vh;display:flex;flex-direction:column;
+  -webkit-font-smoothing:antialiased;}
+
+.topbar{flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px 0;}
+.topbar-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.topbar-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;}
+.sync-label{font-size:11px;color:var(--muted);}
+.topbar-actions{display:flex;gap:6px;margin-bottom:8px;}
+.topbar-btn{border:1px solid var(--border);background:var(--surface2);border-radius:8px;
+  color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:1px;padding:6px 12px;white-space:nowrap;
+  -webkit-appearance:none;appearance:none;}
+.topbar-btn:active{background:var(--border);color:var(--text);}
+.topbar-btn.amber{color:var(--amber);border-color:var(--amber-dim);}
+
+#mainContent{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;padding-bottom:32px;}
+
+.day-tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.tab{border:none;background:none;font-family:'Barlow Condensed',sans-serif;
+  font-size:15px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);padding:10px 0;border-bottom:3px solid transparent;opacity:.7;}
+.tab.push.active{color:var(--push);border-color:var(--push);opacity:1;}
+.tab.pull.active{color:var(--pull);border-color:var(--pull);opacity:1;}
+.tab.legs.active{color:var(--legs);border-color:var(--legs);opacity:1;}
+
+.workout-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 4px;}
+.workout-title{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;line-height:1;}
+.workout-title .label{font-size:13px;font-weight:600;letter-spacing:2px;color:var(--muted);display:block;margin-bottom:2px;}
+.progress-ring{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:4;}
+.ring-fg{fill:none;stroke-width:4;stroke-linecap:round;transition:stroke-dashoffset .4s ease;}
+.ring-text{fill:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;text-anchor:middle;dominant-baseline:central;}
+
+.exercises{padding:8px 12px 0;}
+.ex-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;}
+.ex-header{padding:14px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.ex-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;line-height:1.15;flex:1;}
+.ex-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.ex-prev{font-size:12px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;flex-shrink:0;text-align:left;padding-top:3px;}
+.ex-prev span{color:var(--amber);font-weight:700;}
+.ex-name-wrap{display:flex;flex-direction:column;gap:2px;flex:1;}
+.ex-name-row{display:flex;align-items:center;gap:6px;}
+.edit-name-btn{background:none;border:none;color:var(--muted);font-size:13px;padding:2px;opacity:0.5;}
+.ex-name-input{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  background:var(--surface2);border:1.5px solid var(--amber);border-radius:8px;
+  color:var(--text);padding:6px 10px;width:100%;-webkit-appearance:none;direction:rtl;}
+.ex-name-input:focus{outline:none;}
+
+.sets-list{padding:0 10px 8px;}
+.set-row{display:flex;align-items:center;gap:8px;padding:6px;border-radius:10px;margin-bottom:2px;}
+.set-row.done-row{background:var(--green-bg);}
+.set-num{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--muted);width:22px;text-align:center;flex-shrink:0;}
+.set-row.done-row .set-num{color:var(--green);}
+.sel-wrap{display:flex;flex-direction:column;align-items:center;flex:1;}
+.sel-label{font-size:10px;color:var(--muted);letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;font-weight:700;margin-bottom:3px;}
+.val-select{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;
+  color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  text-align:center;text-align-last:center;width:100%;padding:6px 2px;
+  -webkit-appearance:none;appearance:none;
+  background-image:none;
+}
+.val-select:focus{outline:none;border-color:var(--amber);}
+.set-row.done-row .val-select{border-color:var(--green-bg);color:var(--green);background:transparent;}
+.sep{font-family:'Barlow Condensed',sans-serif;font-size:18px;color:var(--muted);flex-shrink:0;padding-top:14px;}
+.done-btn{flex-shrink:0;width:42px;height:42px;border-radius:50%;border:2px solid var(--border);
+  background:var(--surface2);color:var(--muted);font-size:18px;display:flex;align-items:center;justify-content:center;}
+.done-btn:active{transform:scale(0.9);}
+.set-row.done-row .done-btn{background:var(--green);border-color:var(--green);color:#fff;}
+
+.set-controls{display:flex;align-items:center;gap:6px;padding:0 10px 12px;}
+.set-ctrl-btn{flex:1;border:1.5px solid var(--border);background:var(--surface2);border-radius:8px;
+  color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;
+  letter-spacing:1px;padding:7px 0;-webkit-appearance:none;}
+.set-ctrl-btn.is-add{color:var(--green);border-color:var(--green-bg);}
+.set-ctrl-btn:disabled{opacity:.3;pointer-events:none;}
+.delete-ex-btn{border:1.5px solid var(--border);background:none;border-radius:8px;
+  color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:1px;padding:5px 12px;flex-shrink:0;}
+
+.add-ex-wrap{padding:4px 12px 8px;}
+.add-ex-btn{width:100%;border:1.5px dashed var(--border);background:none;border-radius:var(--radius);
+  color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;
+  letter-spacing:1.5px;padding:12px;-webkit-appearance:none;}
+
+.rest-bar{margin:0 12px 10px;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;display:none;align-items:center;}
+.rest-bar.active{display:flex;}
+.rest-label{font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;color:var(--muted);font-weight:700;white-space:nowrap;}
+.rest-count{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--amber);margin:0 10px;}
+.rest-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-right:auto;}
+.rest-skip,.rest-edit-btn{border:1px solid var(--border);background:none;color:var(--muted);
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;
+  padding:6px 10px;border-radius:8px;white-space:nowrap;-webkit-appearance:none;}
+.rest-edit-btn{color:var(--amber);border-color:var(--amber-dim);}
+.rest-track{height:3px;background:var(--border);border-radius:3px;margin-top:6px;width:100%;}
+.rest-fill{height:100%;border-radius:3px;background:var(--amber);transition:width .95s linear;}
+
+.finish-wrap{padding:16px 12px 0;}
+.finish-btn{width:100%;padding:16px;border:none;border-radius:var(--radius);
+  font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;letter-spacing:2px;
+  text-transform:uppercase;background:linear-gradient(135deg,var(--amber) 0%,#C4851A 100%);
+  color:#13131A;-webkit-appearance:none;}
+.finish-btn:active{transform:scale(0.98);opacity:.9;}
+.finish-btn:disabled{opacity:.35;pointer-events:none;}
+
+.history-section{margin:16px 12px 0;}
+.history-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;color:var(--muted);padding-bottom:8px;
+  border-bottom:1px solid var(--border);margin-bottom:10px;}
+.history-entry{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.history-day{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;}
+.history-day.push{color:var(--push);}.history-day.pull{color:var(--pull);}.history-day.legs{color:var(--legs);}
+.history-date{font-size:12px;color:var(--muted);}
+.history-sets{font-family:'Barlow Condensed',sans-serif;font-size:14px;color:var(--muted);}
+.history-empty{color:var(--muted);font-size:13px;padding:12px 0;}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;
+  display:flex;align-items:flex-end;justify-content:center;}
+.modal-box{background:var(--surface);border:1px solid var(--border);
+  border-radius:20px 20px 0 0;padding:24px 20px 40px;width:100%;max-width:500px;}
+.modal-title{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;text-align:center;}
+.timer-presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
+.preset-btn{border:1.5px solid var(--border);background:var(--surface2);border-radius:10px;
+  color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:800;
+  padding:10px 0;-webkit-appearance:none;}
+.preset-btn.selected{border-color:var(--amber);background:var(--amber-dim);color:var(--amber);}
+.modal-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
+  color:var(--muted);margin-bottom:6px;text-align:right;}
+.modal-text-input,.modal-num-input{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;
+  color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;
+  width:100%;padding:12px;margin-bottom:12px;-webkit-appearance:none;display:block;}
+.modal-text-input{text-align:right;direction:rtl;}
+.modal-num-input{text-align:center;}
+.modal-text-input:focus,.modal-num-input:focus{outline:none;border-color:var(--amber);}
+.modal-row{display:flex;gap:8px;margin-bottom:12px;}
+.modal-row>div{flex:1;display:flex;flex-direction:column;align-items:center;}
+.modal-row .modal-num-input{margin-bottom:0;}
+.modal-row-label{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;
+  letter-spacing:1px;color:var(--muted);margin-bottom:4px;}
+.modal-actions{display:flex;gap:8px;margin-top:4px;}
+.modal-cancel,.modal-confirm{flex:1;padding:14px;border-radius:12px;
+  font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;
+  letter-spacing:1px;border:none;-webkit-appearance:none;}
+.modal-cancel{background:var(--surface2);color:var(--muted);}
+.modal-confirm{background:var(--amber);color:#13131A;}
+
+#importFileInput{display:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-top">
+    <span class="topbar-title">PINI · WORKOUT LOG</span>
+    <span class="sync-label" id="syncLabel">טוען...</span>
+  </div>
+  <div class="topbar-actions">
+    <button class="topbar-btn amber" id="btnExport">📤 יצוא JSON</button>
+    <button class="topbar-btn" id="btnImport">📥 יבוא JSON</button>
+    <input type="file" id="importFileInput" accept=".json">
+  </div>
+  <div class="day-tabs">
+    <button class="tab push" id="tab-push" data-day="push">PUSH 💪</button>
+    <button class="tab pull" id="tab-pull" data-day="pull">PULL 🔄</button>
+    <button class="tab legs" id="tab-legs" data-day="legs">LEGS 🦵</button>
+  </div>
+</div>
+
+<div id="mainContent"></div>
+
+<!-- Timer modal -->
+<div class="modal-overlay" id="timerModal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">⏱ זמן מנוחה</div>
+    <div class="timer-presets">
+      <button class="preset-btn" data-sec="60">60″</button>
+      <button class="preset-btn" data-sec="90">90″</button>
+      <button class="preset-btn" data-sec="120">120″</button>
+      <button class="preset-btn" data-sec="150">150″</button>
+      <button class="preset-btn" data-sec="180">180″</button>
+      <button class="preset-btn" data-sec="0">ידני</button>
+    </div>
+    <div class="modal-label">שניות מותאמות</div>
+    <input class="modal-num-input" id="customSec" type="number" min="10" max="600" inputmode="numeric">
+    <div class="modal-actions">
+      <button class="modal-cancel" id="timerCancel">ביטול</button>
+      <button class="modal-confirm" id="timerConfirm">שמור</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add exercise modal -->
+<div class="modal-overlay" id="addExModal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">➕ תרגיל חדש</div>
+    <div class="modal-label">שם התרגיל</div>
+    <input class="modal-text-input" id="addExName" type="text" placeholder="לדוגמה: לחיצת חזה"
+      maxlength="40" autocomplete="off" autocorrect="off" autocapitalize="off" enterkeyhint="next">
+    <div class="modal-row">
+      <div><div class="modal-row-label">סטים</div>
+        <input class="modal-num-input" id="addExSets" type="number" min="1" max="8" value="3" inputmode="numeric"></div>
+      <div><div class="modal-row-label">חזרות</div>
+        <input class="modal-num-input" id="addExReps" type="number" min="1" max="100" value="10" inputmode="numeric"></div>
+      <div><div class="modal-row-label">KG</div>
+        <input class="modal-num-input" id="addExWeight" type="number" min="0" step="2.5" value="0" inputmode="decimal"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="addExCancel">ביטול</button>
+      <button class="modal-confirm" id="addExConfirm">הוסף ✓</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── PLAN ────────────────────────────────────────────────────────────────────
+const PLAN = {
+  push:{label:'PUSH',emoji:'💪',exercises:[
+    {id:'bench',  name:'לחיצת חזה',           sub:'4×8-12 | 50kg', sets:4,reps:10,weight:50},
+    {id:'incline',name:'לחיצת חזה בשיפוע',   sub:'3×8-12 | 40kg', sets:3,reps:10,weight:40},
+    {id:'ohp',    name:'לחיצת כתפיים עמידה', sub:'3×8-12 | 10kg', sets:3,reps:10,weight:10},
+    {id:'skull',  name:'Skull Crushers',       sub:'3×10-12 | 10kg',sets:3,reps:10,weight:10},
+    {id:'dips',   name:'Dips',                sub:'3×10-15',       sets:3,reps:12,weight:0 },
+  ]},
+  pull:{label:'PULL',emoji:'🔄',exercises:[
+    {id:'pullup', name:'מתח אחיזה רחבה',      sub:'4×מקסימום',     sets:4,reps:10,weight:0 },
+    {id:'row1',   name:'חתירה עם מוט',        sub:'3×8-12 | 50kg', sets:3,reps:10,weight:50},
+    {id:'gorilla',name:'Gorilla Row',          sub:'3×8-12 | 16kg', sets:3,reps:10,weight:16},
+    {id:'curl',   name:'Bicep Curls מוט W',   sub:'3×10-12 | 10kg',sets:3,reps:10,weight:10},
+    {id:'superman',name:'Superman',            sub:'3×12-15',       sets:3,reps:12,weight:0 },
+  ]},
+  legs:{label:'LEGS',emoji:'🦵',exercises:[
+    {id:'squat',  name:'סקוואט עם מוט',       sub:'4×8-12',        sets:4,reps:10,weight:0 },
+    {id:'rdl',    name:'Romanian Deadlift',    sub:'4×10-12',       sets:4,reps:10,weight:0 },
+    {id:'bss',    name:'Bulgarian Split Squat',sub:'3×10-12/רגל',   sets:3,reps:10,weight:0 },
+    {id:'calf',   name:'הרמת עקבים עם מוט',   sub:'4×15-20',       sets:4,reps:15,weight:0 },
+    {id:'sissy',  name:'Sissy Squat',          sub:'3×12-15',       sets:3,reps:12,weight:0 },
+  ]}
+};
+
+const WEIGHT_OPTIONS = [0,5,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,
+                        42,44,46,48,50,52,54,56,58,60,65,70,75,80,85,90,95,100];
+const REPS_OPTIONS   = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,
+                        25,30,40,50,60,90,120];
+
+function weightOpts(cur) {
+  const vals = WEIGHT_OPTIONS.includes(cur) ? WEIGHT_OPTIONS : [...WEIGHT_OPTIONS,cur].sort((a,b)=>a-b);
+  return vals.map(v=>`<option value="${v}"${v===cur?' selected':''}>${v===0?'BW':v+' kg'}</option>`).join('');
+}
+function repsOpts(cur) {
+  const vals = REPS_OPTIONS.includes(cur) ? REPS_OPTIONS : [...REPS_OPTIONS,cur].sort((a,b)=>a-b);
+  return vals.map(v=>`<option value="${v}"${v===cur?' selected':''}>${v}</option>`).join('');
+}
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let sessions    = {};
+let history     = [];
+let customNames = {};
+let customEx    = {push:[],pull:[],legs:[]};
+let restDuration= 90;
+let activeDay   = 'push';
+let editingExId = null;
+let restTimer   = null;
+let restSec     = 0;
+
+const STORAGE_KEY = 'pini-workout-v2';
+
+// ─── STORAGE ABSTRACTION (window.storage in artifact, localStorage as fallback) ─
+async function storageSet(key, value) {
+  try {
+    if (typeof window.storage !== 'undefined') {
+      await window.storage.set(key, value, false);
+      return;
+    }
+  } catch(e) {}
+  try { localStorage.setItem(key, value); } catch(e) {}
+}
+
+async function storageGet(key) {
+  try {
+    if (typeof window.storage !== 'undefined') {
+      const res = await window.storage.get(key, false);
+      return res ? res.value : null;
+    }
+  } catch(e) {}
+  try { return localStorage.getItem(key); } catch(e) {}
+  return null;
+}
+
+async function persist() {
+  try {
+    const data = {sessions,history,customNames,customEx,restDuration};
+    await storageSet(STORAGE_KEY, JSON.stringify(data));
+    setSyncLabel('נשמר ✓');
+  } catch(e) { setSyncLabel('שגיאת שמירה'); }
+}
+
+async function loadFromStorage() {
+  try {
+    const val = await storageGet(STORAGE_KEY);
+    if (!val) return;
+    const d = JSON.parse(val);
+    if (d.sessions)     sessions     = d.sessions;
+    if (d.history)      history      = d.history;
+    if (d.customNames)  customNames  = d.customNames;
+    if (d.customEx)     customEx     = {push:d.customEx.push||[],pull:d.customEx.pull||[],legs:d.customEx.legs||[]};
+    if (d.restDuration) restDuration = d.restDuration;
+  } catch(e) {}
+}
+
+// ─── EXPORT / IMPORT ─────────────────────────────────────────────────────────
+function exportJSON() {
+  const data = {sessions,history,customNames,customEx,restDuration,exportedAt:new Date().toISOString()};
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href=url; a.download=`pini-workout-${todayStr().replace(/\./g,'-')}.json`;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},100);
+}
+
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (d.sessions)     sessions     = d.sessions;
+      if (d.history)      history      = d.history;
+      if (d.customNames)  customNames  = d.customNames;
+      if (d.customEx)     customEx     = {push:d.customEx.push||[],pull:d.customEx.pull||[],legs:d.customEx.legs||[]};
+      if (d.restDuration) restDuration = d.restDuration;
+      await persist(); render(); setSyncLabel('יובא ✓');
+    } catch(e) { alert('קובץ לא תקין'); }
+  };
+  reader.readAsText(file);
+}
+
+function setSyncLabel(t){document.getElementById('syncLabel').textContent=t;}
+function todayStr(){return new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'});}
+function getExName(ex){return customNames[ex.id]||ex.name;}
+function allExercises(day){return [...PLAN[day].exercises,...customEx[day]];}
+
+function getSession(day) {
+  if (!sessions[day]) {
+    sessions[day]={date:todayStr(),sets:{}};
+    for (const ex of PLAN[day].exercises)
+      sessions[day].sets[ex.id]=Array.from({length:ex.sets},()=>({w:ex.weight,r:ex.reps,done:false}));
+  }
+  return sessions[day];
+}
+function getExSets(day,ex) {
+  const sess=getSession(day);
+  if (!sess.sets[ex.id])
+    sess.sets[ex.id]=Array.from({length:ex.sets},()=>({w:ex.weight,r:ex.reps,done:false}));
+  return sess.sets[ex.id];
+}
+
+function flushSelectsToState() {
+  document.querySelectorAll('#mainContent select[data-ex]').forEach(sel=>{
+    const {ex,set:si,field}=sel.dataset;
+    if (!ex||si==null||!field) return;
+    const sess=sessions[activeDay];
+    if (!sess||!Array.isArray(sess.sets[ex])||!sess.sets[ex][+si]) return;
+    sess.sets[ex][+si][field]=parseFloat(sel.value);
+  });
+}
+
+// ─── RING ────────────────────────────────────────────────────────────────────
+function buildRing(done,total,day) {
+  const R=18,C=2*Math.PI*R,offset=C*(1-(total===0?0:done/total));
+  const col={push:'var(--push)',pull:'var(--pull)',legs:'var(--legs)'}[day];
+  return `<svg class="progress-ring" width="50" height="50" viewBox="0 0 50 50">
+    <circle class="ring-bg" cx="25" cy="25" r="${R}"/>
+    <circle class="ring-fg" cx="25" cy="25" r="${R}" stroke="${col}"
+      stroke-dasharray="${C}" stroke-dashoffset="${offset}"/>
+    <text class="ring-text" x="25" y="25" transform="rotate(90,25,25)">${done}/${total}</text>
+  </svg>`;
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function render() {
+  flushSelectsToState();
+
+  document.querySelectorAll('.tab').forEach(t=>
+    t.classList.toggle('active',t.dataset.day===activeDay));
+
+  const exList=allExercises(activeDay);
+  const lastLog=[...history].reverse().find(h=>h.day===activeDay);
+  let totalSets=0,doneSets=0;
+  for (const ex of exList)
+    for (const s of getExSets(activeDay,ex)){totalSets++;if(s.done)doneSets++;}
+
+  let exHTML='';
+  for (const ex of exList) {
+    const sets=getExSets(activeDay,ex);
+    const isCustom=customEx[activeDay].some(c=>c.id===ex.id);
+    const prevLog=lastLog?.sets?.[ex.id];
+    const prevMax=prevLog?Math.max(...prevLog.map(s=>s.w)):null;
+    const prevInfo=prevMax!==null
+      ?`<div class="ex-prev">קודם: <span>${prevMax>0?prevMax+'kg':'BW'}</span></div>`:'' ;
+
+    let setsHTML='';
+    for (let i=0;i<sets.length;i++) {
+      const s=sets[i];
+      const rLabel=ex.id==='plank'?'שנ\'':'חז\'';
+      setsHTML+=`
+      <div class="set-row${s.done?' done-row':''}">
+        <div class="set-num">${i+1}</div>
+        <div class="sel-wrap">
+          <div class="sel-label">KG</div>
+          <select class="val-select" data-ex="${ex.id}" data-set="${i}" data-field="w" style="width:70px;">
+            ${weightOpts(s.w)}
+          </select>
+        </div>
+        <div class="sep">×</div>
+        <div class="sel-wrap">
+          <div class="sel-label">${rLabel}</div>
+          <select class="val-select" data-ex="${ex.id}" data-set="${i}" data-field="r" style="width:60px;">
+            ${repsOpts(s.r)}
+          </select>
+        </div>
+        <button class="done-btn" data-action="done-toggle" data-ex="${ex.id}" data-set="${i}">
+          ${s.done?'✓':'○'}
+        </button>
+      </div>`;
+    }
+
+    const isEditing=editingExId===ex.id;
+    const nameHTML=isEditing
+      ?`<input class="ex-name-input" id="ni-${ex.id}" type="text"
+          value="${getExName(ex).replace(/"/g,'&quot;')}" data-ex="${ex.id}"
+          maxlength="40" autocomplete="off" autocorrect="off" autocapitalize="off">`
+      :`<div class="ex-name-row">
+          <div class="ex-name">${getExName(ex)}</div>
+          <button class="edit-name-btn" data-action="edit-name" data-ex="${ex.id}">✏️</button>
+        </div>
+        ${ex.sub?`<div class="ex-sub">${ex.sub}</div>`:''}`;
+
+    exHTML+=`
+    <div class="ex-card">
+      <div class="ex-header">
+        <div class="ex-name-wrap">${nameHTML}</div>
+        ${prevInfo}
+      </div>
+      <div class="sets-list">${setsHTML}</div>
+      <div class="set-controls">
+        <button class="set-ctrl-btn is-add" data-action="add-set" data-ex="${ex.id}">+ סט</button>
+        <button class="set-ctrl-btn" data-action="remove-set" data-ex="${ex.id}"
+          ${sets.length>1?'':'disabled'}>− סט</button>
+        ${isCustom?`<button class="delete-ex-btn" data-action="delete-ex" data-ex="${ex.id}">🗑 מחק</button>`:''}
+      </div>
+    </div>`;
+  }
+
+  const histRows=[...history].reverse().slice(0,5);
+  const histHTML=histRows.length===0
+    ?'<div class="history-empty">עוד אין אימונים מוגמרים</div>'
+    :histRows.map(h=>`
+      <div class="history-entry">
+        <div>
+          <div class="history-day ${h.day}">${PLAN[h.day].label} ${PLAN[h.day].emoji}</div>
+          <div class="history-date">${h.date}</div>
+        </div>
+        <div class="history-sets">${h.totalDone} סטים</div>
+      </div>`).join('');
+
+  document.getElementById('mainContent').innerHTML=`
+    <div class="workout-header">
+      <div class="workout-title">
+        <span class="label">${todayStr()}</span>
+        <span style="color:var(--${activeDay})">${PLAN[activeDay].label}</span>
+      </div>
+      <div>${buildRing(doneSets,totalSets,activeDay)}</div>
+    </div>
+
+    <div class="rest-bar${restTimer?' active':''}" id="restBar">
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <div class="rest-label">מנוחה</div>
+          <div class="rest-count" id="restCount">${restSec||restDuration}</div>
+          <div class="rest-actions">
+            <button class="rest-edit-btn" data-action="open-timer-modal">✏️ ${restDuration}″</button>
+            <button class="rest-skip" data-action="skip-rest">דלג</button>
+          </div>
+        </div>
+        <div class="rest-track">
+          <div class="rest-fill" id="restFill"
+            style="width:${restTimer?(restSec/restDuration*100):100}%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exercises">${exHTML}</div>
+
+    <div class="add-ex-wrap">
+      <button class="add-ex-btn" data-action="open-add-ex">＋ הוסף תרגיל</button>
+    </div>
+
+    <div class="finish-wrap">
+      <button class="finish-btn" data-action="finish"
+        ${totalSets>0&&doneSets===totalSets?'':'disabled'}>✅ &nbsp;סיים אימון</button>
+    </div>
+
+    <div class="history-section">
+      <div class="history-title">אימונים אחרונים</div>
+      ${histHTML}
+    </div>
+  `;
+
+  document.querySelectorAll('#mainContent select[data-ex]').forEach(sel=>{
+    sel.addEventListener('change',()=>{
+      const {ex,set:si,field}=sel.dataset;
+      const sess=sessions[activeDay];
+      if (!sess||!Array.isArray(sess.sets[ex])||!sess.sets[ex][+si]) return;
+      sess.sets[ex][+si][field]=parseFloat(sel.value);
+      persist();
+    });
+  });
+
+  if (editingExId) {
+    const ni=document.getElementById('ni-'+editingExId);
+    if (ni) {
+      ni.addEventListener('keydown',e=>{
+        if(e.key==='Enter'){e.preventDefault();commitName(ni);}
+        if(e.key==='Escape'){editingExId=null;render();}
+      });
+      ni.addEventListener('blur',()=>commitName(ni));
+      setTimeout(()=>{ni.focus();ni.select();},60);
+    }
+  }
+}
+
+function commitName(inp) {
+  const val=inp.value.trim();
+  if(val) customNames[inp.dataset.ex]=val;
+  editingExId=null; persist(); render();
+}
+
+// ─── TOUCH HANDLING (same pattern as shopping list) ──────────────────────────
+let lastTouchTime = 0;
+function isRecentTouch(){ return (Date.now() - lastTouchTime) < 500; }
+
+const mc=document.getElementById('mainContent');
+mc.addEventListener('touchend', e=>{
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  if (e.target.tagName === 'SELECT') return;
+  e.preventDefault();
+  lastTouchTime = Date.now();
+  dispatch(btn);
+}, {passive:false});
+mc.addEventListener('click', e=>{
+  if (isRecentTouch()) return;
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  dispatch(btn);
+});
+
+function dispatch(btn) {
+  const {action,ex:exId,set:setStr}=btn.dataset;
+
+  if (action==='done-toggle') {
+    const si=+setStr;
+    const sess=getSession(activeDay);
+    const s=sess.sets[exId]?.[si];
+    if (!s) return;
+    s.done=!s.done;
+    persist(); render();
+    if (s.done) startRest();
+
+  } else if (action==='add-set') {
+    const sets=getExSets(activeDay,allExercises(activeDay).find(e=>e.id===exId));
+    const last=sets[sets.length-1];
+    sets.push({w:last?.w??0,r:last?.r??10,done:false});
+    persist(); render();
+
+  } else if (action==='remove-set') {
+    const sess=getSession(activeDay);
+    if (sess.sets[exId]?.length>1) sess.sets[exId].pop();
+    persist(); render();
+
+  } else if (action==='delete-ex') {
+    if (!confirm('למחוק את התרגיל?')) return;
+    customEx[activeDay]=customEx[activeDay].filter(e=>e.id!==exId);
+    if (sessions[activeDay]?.sets?.[exId]) delete sessions[activeDay].sets[exId];
+    persist(); render();
+
+  } else if (action==='edit-name')       {editingExId=exId;render();}
+  else if (action==='skip-rest')         {stopRest();}
+  else if (action==='open-timer-modal')  {openTimerModal();}
+  else if (action==='open-add-ex')       {openAddExModal();}
+  else if (action==='finish') {
+    const sess=getSession(activeDay);
+    let totalDone=0;
+    for (const ex of allExercises(activeDay))
+      for (const s of (sess.sets[ex.id]||[])) if(s.done) totalDone++;
+    history.push({day:activeDay,date:sess.date,sets:JSON.parse(JSON.stringify(sess.sets)),totalDone});
+    if (history.length>30) history=history.slice(-30);
+    delete sessions[activeDay];
+    persist(); render();
+  }
+}
+
+// ─── TOPBAR BUTTONS ──────────────────────────────────────────────────────────
+let lastTopbarTouch = 0;
+function bindTopbarBtn(el, handler) {
+  el.addEventListener('touchend', e=>{e.preventDefault();lastTopbarTouch=Date.now();handler();},{passive:false});
+  el.addEventListener('click', e=>{if((Date.now()-lastTopbarTouch)<500)return;handler();});
+}
+
+bindTopbarBtn(document.getElementById('btnExport'), exportJSON);
+bindTopbarBtn(document.getElementById('btnImport'), ()=>document.getElementById('importFileInput').click());
+
+document.getElementById('importFileInput').addEventListener('change', e=>{
+  const file=e.target.files[0];
+  if (file) importJSON(file);
+  e.target.value='';
+});
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('touchend', e=>{e.preventDefault();lastTouchTime=Date.now();stopRest();activeDay=tab.dataset.day;render();mc.scrollTo({top:0,behavior:'smooth'});},{passive:false});
+  tab.addEventListener('click', e=>{if(isRecentTouch())return;stopRest();activeDay=tab.dataset.day;render();mc.scrollTo({top:0,behavior:'smooth'});});
+});
+
+// ─── TIMER MODAL ─────────────────────────────────────────────────────────────
+function openTimerModal() {
+  document.getElementById('customSec').value=restDuration;
+  document.querySelectorAll('.preset-btn').forEach(b=>b.classList.toggle('selected',+b.dataset.sec===restDuration));
+  document.getElementById('timerModal').style.display='flex';
+}
+function closeTimerModal(){document.getElementById('timerModal').style.display='none';}
+
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    const sec=+btn.dataset.sec; if(sec>0) document.getElementById('customSec').value=sec;
+  });
+});
+document.getElementById('timerCancel').addEventListener('click',closeTimerModal);
+document.getElementById('timerConfirm').addEventListener('click',()=>{
+  restDuration=Math.max(10,Math.min(600,parseInt(document.getElementById('customSec').value)||90));
+  closeTimerModal(); persist(); render();
+});
+document.getElementById('timerModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('timerModal'))closeTimerModal();
+});
+
+// ─── ADD EXERCISE MODAL ───────────────────────────────────────────────────────
+function openAddExModal() {
+  ['addExName','addExSets','addExReps','addExWeight'].forEach((id,i)=>
+    document.getElementById(id).value=['','3','10','0'][i]);
+  document.getElementById('addExModal').style.display='flex';
+  setTimeout(()=>{const i=document.getElementById('addExName');i.focus();i.click();},150);
+}
+function closeAddExModal(){document.getElementById('addExModal').style.display='none';}
+
+document.getElementById('addExCancel').addEventListener('click',closeAddExModal);
+document.getElementById('addExModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('addExModal'))closeAddExModal();
+});
+document.getElementById('addExConfirm').addEventListener('click',()=>{
+  const name=document.getElementById('addExName').value.trim();
+  if (!name){document.getElementById('addExName').focus();return;}
+  const numSets=Math.max(1,parseInt(document.getElementById('addExSets').value)||3);
+  const numReps=Math.max(1,parseInt(document.getElementById('addExReps').value)||10);
+  const weight =Math.max(0,parseFloat(document.getElementById('addExWeight').value)||0);
+  const id='cx_'+Date.now();
+  customEx[activeDay].push({id,name,sub:`${numSets}×${numReps}`,sets:numSets,reps:numReps,weight});
+  getSession(activeDay).sets[id]=Array.from({length:numSets},()=>({w:weight,r:numReps,done:false}));
+  closeAddExModal(); persist(); render();
+});
+
+// ─── REST TIMER ──────────────────────────────────────────────────────────────
+function startRest(){
+  stopRest(); restSec=restDuration;
+  document.getElementById('restBar')?.classList.add('active');
+  updateRestDisplay();
+  restTimer=setInterval(()=>{restSec--;updateRestDisplay();if(restSec<=0)stopRest();},1000);
+}
+function stopRest(){
+  if(restTimer){clearInterval(restTimer);restTimer=null;}
+  document.getElementById('restBar')?.classList.remove('active');
+}
+function updateRestDisplay(){
+  const el=document.getElementById('restCount'),fill=document.getElementById('restFill');
+  if(el) el.textContent=restSec;
+  if(fill) fill.style.width=(restSec/restDuration*100)+'%';
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+(async function init(){
+  setSyncLabel('טוען...');
+  await loadFromStorage();
+  render();
+  setSyncLabel('מוכן ✓');
+})();
+</script>
+</body>
+</html>
